@@ -31,6 +31,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         editable: false,
       }],
       config: {},
+      notifiers: {},
       ldap: null,
       plugins: [],
       env: [],
@@ -115,6 +116,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         datasources: $._config.grafana.datasources,
       }, '    '))) }) +
       secret.mixin.metadata.withNamespace($._config.namespace),
+    dashboardNotifiers:
+      local secret = k.core.v1.secret;
+      secret.new('grafana-notifiers', { 'notifiers.yaml': std.base64(std.encodeUTF8(std.manifestYamlDoc({
+        apiVersion: 1,
+        notifiers: $._config.grafana.notifiers,
+      }))) }) +
+      secret.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
@@ -160,11 +168,17 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(dashboardsConfigMapName);
       local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, '/etc/grafana/provisioning/dashboards');
 
+      local notifiersVolumeName = 'grafana-notifiers';
+      local notifiersSecretName = 'grafana-notifiers';
+      local notifiersVolume = volume.withName(notifiersVolumeName) + volume.mixin.secret.withSecretName(notifiersSecretName);
+      local notifiersVolumeMount = containerVolumeMount.new(notifiersVolumeName, '/etc/grafana/provisioning/notifiers');
+
       local volumeMounts =
         [
           storageVolumeMount,
           datasourcesVolumeMount,
           dashboardsVolumeMount,
+          notifiersVolumeMount,
         ] +
         [
           local dashboardName = std.strReplace(name, '.json', '');
@@ -190,6 +204,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           storageVolume,
           datasourcesVolume,
           dashboardsVolume,
+          notifiersVolume,
         ] +
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
@@ -232,6 +247,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       deployment.mixin.spec.template.metadata.withAnnotations({
         [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
         'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
+        'checksum/grafana-notifiers': std.md5(std.toString($.grafana.dashboardNotifiers)),
       }) +
       deployment.mixin.spec.template.spec.withNodeSelector({ 'beta.kubernetes.io/os': 'linux' }) +
       deployment.mixin.spec.template.spec.withVolumes(volumes) +
