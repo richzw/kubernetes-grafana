@@ -178,7 +178,6 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           storageVolumeMount,
           datasourcesVolumeMount,
           dashboardsVolumeMount,
-          notifiersVolumeMount,
         ] +
         [
           local dashboardName = std.strReplace(name, '.json', '');
@@ -197,14 +196,14 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] +
 
-        if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [];
+        if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [] +
+        if std.length($._config.grafana.notifiers) > 0 then [notifiersVolumeMount] else [];
 
       local volumes =
         [
           storageVolume,
           datasourcesVolume,
           dashboardsVolume,
-          notifiersVolume,
         ] +
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
@@ -225,7 +224,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           volume.mixin.configMap.withName(dashboardName)
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] +
-        if std.length($._config.grafana.config) > 0 then [configVolume] else [];
+        if std.length($._config.grafana.config) > 0 then [configVolume] else [] +
+        if std.length($._config.grafana.notifiers) > 0 then [notifiersVolume] else [];
 
       local plugins = (if std.length($._config.grafana.plugins) == 0 then [] else [env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))]);
 
@@ -246,8 +246,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
       deployment.mixin.spec.template.metadata.withAnnotations({
         [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
+        [if std.length($._config.grafana.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString($.grafana.dashboardNotifiers)),
         'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
-        'checksum/grafana-notifiers': std.md5(std.toString($.grafana.dashboardNotifiers)),
       }) +
       deployment.mixin.spec.template.spec.withNodeSelector({ 'beta.kubernetes.io/os': 'linux' }) +
       deployment.mixin.spec.template.spec.withVolumes(volumes) +
