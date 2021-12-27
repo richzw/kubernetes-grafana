@@ -194,10 +194,11 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           local dashboardName = std.strReplace(name, '.json', '');
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
           for name in std.objectFields($._config.grafana.rawDashboards)
-        ] +
-
-        if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [] +
-        if std.length($._config.grafana.notifiers) > 0 then [notifiersVolumeMount] else [];
+        ] + (
+          if std.length($._config.grafana.config) > 0 then [configVolumeMount] else []
+        ) + (
+          if std.length($._config.grafana.notifiers) > 0 then [notifiersVolumeMount] else []
+        );
 
       local volumes =
         [
@@ -223,9 +224,11 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           volume.withName(dashboardName) +
           volume.mixin.configMap.withName(dashboardName)
           for name in std.objectFields($._config.grafana.rawDashboards)
-        ] +
-        if std.length($._config.grafana.config) > 0 then [configVolume] else [] +
-        if std.length($._config.grafana.notifiers) > 0 then [notifiersVolume] else [];
+        ] + (
+          if std.length($._config.grafana.config) > 0 then [configVolume] else []
+        ) + (
+          if std.length($._config.grafana.notifiers) > 0 then [notifiersVolume] else []
+        );
 
       local plugins = (if std.length($._config.grafana.plugins) == 0 then [] else [env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))]);
 
