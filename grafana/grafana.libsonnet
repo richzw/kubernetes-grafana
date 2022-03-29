@@ -36,6 +36,7 @@
       // Forces pod restarts when dashboards are changed
       dashboardsChecksum: false,
       config: {},
+      notifiers: [],
       ldap: null,
       plugins: [],
       env: [],
@@ -194,6 +195,22 @@
           namespace: $._config.namespace,
         },
       },
+    notifiers: 
+      {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: g._metadata {
+          name: 'grafana-notifiers',
+        },
+        type: 'Opaque',
+        stringData: {
+          'notifiers.yaml': std.manifestYamlDoc(
+            {
+              apiVersion: 1,
+              notifiers: g._config.notifiers,
+            }),
+        },
+      },
     deployment:
       local targetPort = $._config.grafana.port;
       local portName = 'http';
@@ -222,6 +239,15 @@
       local dashboardsConfigMapName = 'grafana-dashboards';
       local dashboardsVolume = { name: dashboardsVolumeName, configMap: { name: dashboardsConfigMapName } };
       local dashboardsVolumeMount = { name: dashboardsVolumeName, mountPath: '/etc/grafana/provisioning/dashboards', readOnly: false };
+      local notifiersVolume = {
+        name: 'grafana-notifiers',
+        secret: { secretName: g.notifiers.metadata.name },
+      };
+      local notifiersVolumeMount = {
+        name: notifiersVolume.name,
+        mountPath: '/etc/grafana/provisioning/notifiers',
+        readOnly: false,
+      };
 
       local volumeMounts =
         [
@@ -259,6 +285,8 @@
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] + (
           if std.length($._config.grafana.config) > 0 then [configVolumeMount] else []
+        ) + (
+          if std.length(g._config.notifiers) > 0 then [notifiersVolumeMount] else []
         );
 
       local volumes =
@@ -291,8 +319,11 @@
             configMap: { name: dashboardName },
           }
           for name in std.objectFields($._config.grafana.rawDashboards)
-        ] +
-        if std.length($._config.grafana.config) > 0 then [configVolume] else [];
+        ] + (
+          if std.length($._config.grafana.config) > 0 then [configVolume] else [];
+        ) + (
+          if std.length(g._config.notifiers) > 0 then [notifiersVolume] else []
+        );
 
       local plugins = (
         if std.length($._config.grafana.plugins) == 0 then
@@ -333,6 +364,7 @@
                 [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
                 'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
                 [if $._config.grafana.dashboardsChecksum then 'checksum/grafana-dashboards']: std.md5(std.toString($.grafana.dashboardDefinitions)),
+                [if std.length(g._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString(g.notifiers)),
               },
             },
             spec: {
