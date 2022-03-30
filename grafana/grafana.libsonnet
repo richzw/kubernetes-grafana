@@ -242,7 +242,7 @@
       local dashboardsVolumeMount = { name: dashboardsVolumeName, mountPath: '/etc/grafana/provisioning/dashboards', readOnly: false };
       local notifiersVolume = {
         name: 'grafana-notifiers',
-        secret: { secretName: g.notifiers.metadata.name },
+        secret: { secretName: $.notifiers.metadata.name },
       };
       local notifiersVolumeMount = {
         name: notifiersVolume.name,
@@ -287,7 +287,7 @@
         ] + (
           if std.length($._config.grafana.config) > 0 then [configVolumeMount] else []
         ) + (
-          if std.length(g._config.notifiers) > 0 then [notifiersVolumeMount] else []
+          if std.length($._config.notifiers) > 0 then [notifiersVolumeMount] else []
         );
 
       local volumes =
@@ -323,7 +323,7 @@
         ] + (
           if std.length($._config.grafana.config) > 0 then [configVolume] else []
         ) + (
-          if std.length(g._config.notifiers) > 0 then [notifiersVolume] else []
+          if std.length($._config.notifiers) > 0 then [notifiersVolume] else []
         );
 
       local plugins = (
@@ -365,7 +365,7 @@
                 [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
                 'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
                 [if $._config.grafana.dashboardsChecksum then 'checksum/grafana-dashboards']: std.md5(std.toString($.grafana.dashboardDefinitions)),
-                [if std.length(g._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString(g.notifiers)),
+                [if std.length($._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString($.notifiers)),
               },
             },
             spec: {
