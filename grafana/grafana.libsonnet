@@ -199,15 +199,16 @@
       {
         apiVersion: 'v1',
         kind: 'Secret',
-        metadata: g._metadata {
+        metadata: {
           name: 'grafana-notifiers',
+          namespace: $._config.namespace,
         },
         type: 'Opaque',
         stringData: {
           'notifiers.yaml': std.manifestYamlDoc(
             {
               apiVersion: 1,
-              notifiers: g._config.notifiers,
+              notifiers: $._config.notifiers,
             }),
         },
       },
@@ -320,7 +321,7 @@
           }
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] + (
-          if std.length($._config.grafana.config) > 0 then [configVolume] else [];
+          if std.length($._config.grafana.config) > 0 then [configVolume] else []
         ) + (
           if std.length(g._config.notifiers) > 0 then [notifiersVolume] else []
         );
