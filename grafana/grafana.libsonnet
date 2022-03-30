@@ -365,7 +365,7 @@
                 [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
                 'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
                 [if $._config.grafana.dashboardsChecksum then 'checksum/grafana-dashboards']: std.md5(std.toString($.grafana.dashboardDefinitions)),
-                [if std.length($._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString($.notifiers)),
+                [if std.length($._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString($._config.notifiers)),
               },
             },
             spec: {
