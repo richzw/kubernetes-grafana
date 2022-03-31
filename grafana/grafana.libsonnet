@@ -208,7 +208,7 @@
           'notifiers.yaml': std.manifestYamlDoc(
             {
               apiVersion: 1,
-              notifiers: $._config.notifiers,
+              notifiers: $._config.grafana.notifiers,
             }),
         },
       },
