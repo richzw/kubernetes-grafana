@@ -204,12 +204,12 @@
           namespace: $._config.namespace,
         },
         type: 'Opaque',
-        stringData: {
-          'notifiers.yaml': std.manifestYamlDoc(
+        data: {
+          'notifiers.yaml': std.base64(std.encodeUTF8(std.manifestYamlDoc(
             {
               apiVersion: 1,
               notifiers: $._config.grafana.notifiers,
-            }),
+            }, '    '))),
         },
       },
     deployment:
@@ -255,6 +255,7 @@
           storageVolumeMount,
           datasourcesVolumeMount,
           dashboardsVolumeMount,
+          notifiersVolumeMount,
         ] +
         [
           {
@@ -295,6 +296,7 @@
           storageVolume,
           datasourcesVolume,
           dashboardsVolume,
+          notifiersVolume,
         ] +
         [
           {
