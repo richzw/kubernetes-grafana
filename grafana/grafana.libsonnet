@@ -288,8 +288,6 @@
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] + (
           if std.length($._config.grafana.config) > 0 then [configVolumeMount] else []
-        ) + (
-          if std.length($._config.grafana.notifiers) > 0 then [notifiersVolumeMount] else []
         );
 
       local volumes =
@@ -325,8 +323,6 @@
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] + (
           if std.length($._config.grafana.config) > 0 then [configVolume] else []
-        ) + (
-          if std.length($._config.grafana.notifiers) > 0 then [notifiersVolume] else []
         );
 
       local plugins = (
