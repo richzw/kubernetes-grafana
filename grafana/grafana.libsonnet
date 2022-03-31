@@ -202,10 +202,11 @@
         metadata: {
           name: 'grafana-notifiers',
           namespace: $._config.namespace,
+          labels: $._config.grafana.labels,
         },
         type: 'Opaque',
         data: {
-          'notifiers.yaml': std.base64(std.encodeUTF8(std.manifestYamlDoc(
+          'notifiers.yaml': std.base64(std.encodeUTF8(std.manifestJsonEx(
             {
               apiVersion: 1,
               notifiers: $._config.grafana.notifiers,
