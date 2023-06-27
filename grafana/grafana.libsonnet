@@ -16,8 +16,8 @@ local defaults = {
   replicas: 1,
   port: 3000,
   resources: {
-    requests: { cpu: '100m', memory: '100Mi' },
-    limits: { cpu: '200m', memory: '200Mi' },
+    requests: { cpu: '300m', memory: '600Mi' },
+    limits: { cpu: '300m', memory: '600Mi' },
   },
 
   dashboards: {},
