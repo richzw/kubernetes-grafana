@@ -37,8 +37,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       env: [],
       port: 3000,
       container: {
-        requests: { cpu: '100m', memory: '100Mi' },
-        limits: { cpu: '200m', memory: '200Mi' },
+        requests: { cpu: '500m', memory: '800Mi' },
+        limits: { cpu: '500m', memory: '800Mi' },
       },
       containers: [],
     },
